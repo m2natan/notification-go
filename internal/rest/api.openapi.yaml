@@ -1,0 +1,51 @@
+openapiOptions:
+  file:
+    - file: "notificationpb/message.proto"
+      option:
+        info:
+          title: Notification Service
+          version: "1.0.0"
+        basePath: /
+  method:
+    - method: notificationpb.NotificationService.CreateNotification
+      option:
+        operationId: createNotification
+        tags:
+          - Notification
+        summary: Create a new notification
+    - method: notificationpb.NotificationService.GetNotificationById
+      option:
+        operationId: getNotification
+        tags:
+          - Notification
+        summary: Get a notification by ID
+    - method: notificationpb.NotificationService.UpdateNotification
+      option:
+        operationId: updateNotification
+        tags:
+          - Notification
+        summary: Update an existing notification
+    - method: notificationpb.NotificationService.DeleteNotification
+      option:
+        operationId: deleteNotification
+        tags:
+          - Notification
+        summary: Delete a notification by ID
+    - method: notificationpb.NotificationService.GetNotifications
+      option:
+        operationId: getNotifications
+        tags:
+          - Notification
+        summary: List all notifications
+    - method: notificationpb.NotificationService.GetNotificationsByStatus
+      option:
+        operationId: getNotificationsByStatus
+        tags:
+          - Notification
+        summary: Get notifications by status
+    - method: notificationpb.NotificationService.GetNotificationsByType
+      option:
+        operationId: getNotificationsByType
+        tags:
+          - Notification
+        summary: Get notifications by type

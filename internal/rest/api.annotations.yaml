@@ -1,0 +1,21 @@
+type: google.api.Service
+config_version: 3
+http:
+  rules:
+    - selector: notificationpb.NotificationService.CreateNotification
+      post: /api/notifications
+      body: "*"
+    - selector: notificationpb.NotificationService.GetNotificationById
+      get: /api/notifications/{id}
+    - selector: notificationpb.NotificationService.UpdateNotification
+      put: /api/notifications/{id}
+      body: "*"
+    - selector: notificationpb.NotificationService.DeleteNotification
+      delete: /api/notifications/{id}
+    - selector: notificationpb.NotificationService.GetNotifications
+      get: /api/notifications
+    - selector: notificationpb.NotificationService.GetNotificationsByStatus
+      get: /api/notifications/status/{status}
+    - selector: notificationpb.NotificationService.GetNotificationsByType
+      get: /api/notifications/type/{type}
+    
