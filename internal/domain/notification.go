@@ -18,6 +18,7 @@ const (
 
 	NotificationTypeEmail NotifiationType = "email"
 	NotificationTypeSms   NotifiationType = "sms"
+	NotificationTypeUnknown NotifiationType = "unknown"
 )
 
 type Notification struct {

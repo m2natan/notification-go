@@ -11,6 +11,7 @@ enum EmailStatus {
 enum NotificationType {
     NOTIFICATION_TYPE_EMAIL = 0;
     NOTIFICATION_TYPE_SMS = 1;
+    NOTIFICATION_TYPE_UNKNOWN = 2;
 }
 
 message Notification {

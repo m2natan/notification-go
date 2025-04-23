@@ -1,0 +1,418 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Notification Service",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "NotificationService"
+    }
+  ],
+  "basePath": "/",
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/notifications": {
+      "get": {
+        "summary": "List all notifications",
+        "operationId": "getNotifications",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/notificationpbGetNotificationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Notification"
+        ]
+      },
+      "post": {
+        "summary": "Create a new notification",
+        "operationId": "createNotification",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/notificationpbNotification"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/notificationpbCreateNotificationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Notification"
+        ]
+      }
+    },
+    "/api/notifications/status/{status}": {
+      "get": {
+        "summary": "Get notifications by status",
+        "operationId": "getNotificationsByStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/notificationpbGetNotificationsByStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "STATUS_PENDING",
+              "STATUS_SENT",
+              "STATUS_FAILED"
+            ]
+          }
+        ],
+        "tags": [
+          "Notification"
+        ]
+      }
+    },
+    "/api/notifications/type/{type}": {
+      "get": {
+        "summary": "Get notifications by type",
+        "operationId": "getNotificationsByType",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/notificationpbGetNotificationsByTypeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "type",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "NOTIFICATION_TYPE_EMAIL",
+              "NOTIFICATION_TYPE_SMS",
+              "NOTIFICATION_TYPE_UNKNOWN"
+            ]
+          }
+        ],
+        "tags": [
+          "Notification"
+        ]
+      }
+    },
+    "/api/notifications/{id}": {
+      "get": {
+        "summary": "Get a notification by ID",
+        "operationId": "getNotification",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/notificationpbNotification"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Notification"
+        ]
+      },
+      "delete": {
+        "summary": "Delete a notification by ID",
+        "operationId": "deleteNotification",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/notificationpbNotification"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Notification"
+        ]
+      },
+      "put": {
+        "summary": "Update an existing notification",
+        "operationId": "updateNotification",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/notificationpbNotification"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NotificationServiceUpdateNotificationBody"
+            }
+          }
+        ],
+        "tags": [
+          "Notification"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "NotificationServiceUpdateNotificationBody": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "senderName": {
+          "type": "string"
+        },
+        "senderEmail": {
+          "type": "string"
+        },
+        "recipientEmail": {
+          "type": "string"
+        },
+        "recipientName": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/notificationpbEmailStatus"
+        },
+        "type": {
+          "$ref": "#/definitions/notificationpbNotificationType"
+        }
+      }
+    },
+    "notificationpbCreateNotificationRequest": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "senderName": {
+          "type": "string"
+        },
+        "senderEmail": {
+          "type": "string"
+        },
+        "recipientEmail": {
+          "type": "string"
+        },
+        "recipientName": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/notificationpbEmailStatus"
+        },
+        "type": {
+          "$ref": "#/definitions/notificationpbNotificationType"
+        }
+      }
+    },
+    "notificationpbEmailStatus": {
+      "type": "string",
+      "enum": [
+        "STATUS_PENDING",
+        "STATUS_SENT",
+        "STATUS_FAILED"
+      ],
+      "default": "STATUS_PENDING"
+    },
+    "notificationpbGetNotificationsByStatusResponse": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/notificationpbNotification"
+          }
+        }
+      }
+    },
+    "notificationpbGetNotificationsByTypeResponse": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/notificationpbNotification"
+          }
+        }
+      }
+    },
+    "notificationpbGetNotificationsResponse": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/notificationpbNotification"
+          }
+        }
+      }
+    },
+    "notificationpbNotification": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "senderName": {
+          "type": "string"
+        },
+        "senderEmail": {
+          "type": "string"
+        },
+        "recipientEmail": {
+          "type": "string"
+        },
+        "recipientName": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/notificationpbEmailStatus"
+        },
+        "type": {
+          "$ref": "#/definitions/notificationpbNotificationType"
+        }
+      }
+    },
+    "notificationpbNotificationType": {
+      "type": "string",
+      "enum": [
+        "NOTIFICATION_TYPE_EMAIL",
+        "NOTIFICATION_TYPE_SMS",
+        "NOTIFICATION_TYPE_UNKNOWN"
+      ],
+      "default": "NOTIFICATION_TYPE_EMAIL"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
