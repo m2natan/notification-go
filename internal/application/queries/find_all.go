@@ -7,6 +7,8 @@ import (
 )
 
 type (
+	FindAll struct {
+	}
 	FindAllHandler struct {
 		notification domain.NotificationRepository
 	}

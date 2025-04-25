@@ -11,8 +11,8 @@ type (
 		Subject        string
 		Content        string
 		SenderName     string
-		SenderEmail    string
-		RecipientEmail string
+		Sender    string
+		Recipient string
 		RecipientName  string
 		Status         domain.EmailStatus
 		Type           domain.NotifiationType
@@ -28,7 +28,7 @@ func NewCreateNotificationHandler(notification domain.NotificationRepository) Cr
 }
 
 func (h CreateNotificationHandler) CreateNotification(ctx context.Context, cmd CreateNotificationCommand) (*domain.Notification, error) {
-	notification, err := domain.CreateNotification(cmd.Subject, cmd.Content, cmd.SenderName, cmd.SenderEmail, cmd.RecipientEmail, cmd.RecipientName, cmd.Status, cmd.Type)
+	notification, err := domain.CreateNotification(cmd.Subject, cmd.Content, cmd.SenderName, cmd.Sender, cmd.Recipient, cmd.RecipientName, cmd.Status, cmd.Type)
 	if err != nil {
 		return nil, err
 	}

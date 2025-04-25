@@ -1,0 +1,53 @@
+services:
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notification-service
+    env_file:
+      - .env
+    ports:
+      - "${REST_PORT}:${REST_PORT}"
+      - "${GRPC_PORT}:${GRPC_PORT}"   # gRPC
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - GRPC_PORT=${GRPC_PORT}
+      - HTTP_PORT=${REST_PORT}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=5432  # Fixed: Inside container postgres always runs on 5432
+    networks:
+      - notification_network
+
+  postgres:
+    image: postgres:17.4-alpine
+    container_name: notification-db
+    ports:
+      - "${POSTGRES_PORT}:5432"  # Map host port to container's 5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - notification_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    name: notification-db-data
+
+networks:
+  notification_network:
+    name: notification-network
+    driver: bridge

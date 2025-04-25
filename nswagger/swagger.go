@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+//go:embed index.html api.swagger.json
 var swaggerFiles embed.FS
 
 func SwaggerHandler() http.Handler {

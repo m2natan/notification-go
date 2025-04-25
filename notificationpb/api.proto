@@ -18,8 +18,8 @@ message CreateNotificationRequest {
     string subject = 1;
     string content = 2;
     string sender_name = 3;
-    string sender_email = 4;
-    string recipient_email = 5;
+    string sender = 4;
+    string recipient = 5;
     string recipient_name = 6;
     EmailStatus status = 7;
     NotificationType type = 8;
@@ -30,8 +30,8 @@ message UpdateNotificationRequest {
     string subject = 2;
     string content = 3;
     string sender_name = 4;
-    string sender_email = 5;
-    string recipient_email = 6;
+    string sender = 5;
+    string recipient = 6;
     string recipient_name = 7;
     EmailStatus status = 8;
     NotificationType type = 9;

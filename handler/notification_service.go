@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"context"
@@ -26,8 +26,8 @@ func (n *NotificationServiceHandler) CreateNotification(ctx context.Context, req
 		Subject:        req.Subject,
 		Content:        req.Content,
 		SenderName:     req.SenderName,
-		SenderEmail:    req.SenderEmail,
-		RecipientEmail: req.RecipientEmail,
+		Sender:    req.Sender,
+		Recipient: req.Recipient,
 		RecipientName:  req.RecipientName,
 		Type:           converter.ConvertPbTypeToDomain(req.Type),
 	}
@@ -45,8 +45,8 @@ func (n *NotificationServiceHandler) UpdateNotification(ctx context.Context, req
 		Subject:        req.Subject,
 		Content:        req.Content,
 		SenderName:     req.SenderName,
-		SenderEmail:    req.SenderEmail,
-		RecipientEmail: req.RecipientEmail,
+		Sender:    req.Sender,
+		Recipient: req.Recipient,
 		RecipientName:  req.RecipientName,
 		Type:           converter.ConvertPbTypeToDomain(req.Type),
 	}
@@ -74,7 +74,7 @@ func (n *NotificationServiceHandler) DeleteNotification(ctx context.Context, req
 	return converter.ConvertNotificationToPb(notification), nil
 }
 
-func (n *NotificationServiceHandler) FindById(ctx context.Context, req *notificationpb.GetNotificationByIdRequest) (*notificationpb.Notification, error) {
+func (n *NotificationServiceHandler) GetNotificationById(ctx context.Context, req *notificationpb.GetNotificationByIdRequest) (*notificationpb.Notification, error) {
 	query := queries.FindById{Id: req.Id}
 	notification, err := n.app.FindById(ctx, query)
 	if err != nil {
@@ -83,11 +83,49 @@ func (n *NotificationServiceHandler) FindById(ctx context.Context, req *notifica
 	return converter.ConvertNotificationToPb(notification), nil
 }
 
-func (n *NotificationServiceHandler) FindByType(ctx context.Context, req *notificationpb.GetNotificationsByTypeRequest) (*notificationpb.GetNotificationsByTypeResponse, error) {
+func (n *NotificationServiceHandler) GetNotificationsByType(ctx context.Context, req *notificationpb.GetNotificationsByTypeRequest) (*notificationpb.GetNotificationsByTypeResponse, error) {
 	query := queries.FindByType{Type: converter.ConvertPbTypeToDomain(req.Type)}
 	notification, err := n.app.FindByType(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	return n.GetNotificationsByType(ctx, &notificationpb.GetNotificationsByTypeRequest{)
+	var pbNotifications []*notificationpb.Notification
+	for _, notif := range notification {
+		pbNotifications = append(pbNotifications, converter.ConvertNotificationToPb(&notif))
+	}
+
+	return &notificationpb.GetNotificationsByTypeResponse{
+		Notifications: pbNotifications,
+	}, nil
+}
+
+func (n *NotificationServiceHandler) GetNotificationsByStatus(ctx context.Context, req *notificationpb.GetNotificationsByStatusRequest) (*notificationpb.GetNotificationsByStatusResponse, error) {
+	query := queries.FindByStatus{Status: converter.ConvertPbStatusToDomain(req.Status)}
+	notification, err := n.app.FindByStatus(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var pbNotifications []*notificationpb.Notification
+	for _, notif := range notification {
+		pbNotifications = append(pbNotifications, converter.ConvertNotificationToPb(&notif))
+	}
+
+	return &notificationpb.GetNotificationsByStatusResponse{
+		Notifications: pbNotifications,
+	}, nil
+}
+
+func (n *NotificationServiceHandler) GetNotifications(ctx context.Context, req *notificationpb.GetNotificationsRequest) (*notificationpb.GetNotificationsResponse, error) {
+	notification, err := n.app.FindAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var pbNotifications []*notificationpb.Notification
+	for _, notif := range notification {
+		pbNotifications = append(pbNotifications, converter.ConvertNotificationToPb(&notif))
+	}
+
+	return &notificationpb.GetNotificationsResponse{
+		Notifications: pbNotifications,
+	}, nil
 }

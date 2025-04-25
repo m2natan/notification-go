@@ -12,8 +12,8 @@ type (
 		Subject        string
 		Content        string
 		SenderName     string
-		SenderEmail    string
-		RecipientEmail string
+		Sender    string
+		Recipient string
 		RecipientName  string
 		Status         domain.EmailStatus
 		Type           domain.NotifiationType
@@ -33,8 +33,8 @@ func (h UpdateNotificationHandler) UpdateNotification(ctx context.Context, cmd U
 		Subject:        cmd.Subject,
 		Content:        cmd.Content,
 		SenderName:     cmd.SenderName,
-		SenderEmail:    cmd.SenderEmail,
-		RecipientEmail: cmd.RecipientEmail,
+		Sender:    cmd.Sender,
+		Recipient: cmd.Recipient,
 		RecipientName:  cmd.RecipientName,
 		Status:         cmd.Status,
 		Type:           cmd.Type,

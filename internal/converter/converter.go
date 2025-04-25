@@ -11,8 +11,8 @@ func ConvertNotificationToPb(from *domain.Notification) (to *notificationpb.Noti
 		Subject:        from.Subject,
 		Content:        from.Content,
 		SenderName:     from.SenderName,
-		SenderEmail:    from.SenderEmail,
-		RecipientEmail: from.RecipientEmail,
+		Sender:    from.Sender,
+		Recipient: from.Recipient,
 		RecipientName:  from.RecipientName,
 		Status:         convertStatusToPb(from.Status),
 		Type:           convertTypeToPb(from.Type),
@@ -50,5 +50,16 @@ func ConvertPbTypeToDomain(t notificationpb.NotificationType) domain.Notifiation
 		return domain.NotificationTypeEmail
 	default:
 		return domain.NotificationTypeUnknown
+	}
+}
+
+func ConvertPbStatusToDomain(s notificationpb.EmailStatus) domain.EmailStatus {
+	switch s {
+	case notificationpb.EmailStatus_STATUS_PENDING:
+		return domain.StatusPending
+	case notificationpb.EmailStatus_STATUS_SENT:
+		return domain.StatusSent
+	default:
+		return domain.StatusFailed
 	}
 }

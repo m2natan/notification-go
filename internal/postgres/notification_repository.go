@@ -58,13 +58,13 @@ func (n *NotificationRepository) FindByStatus(ctx context.Context, status domain
 // FindByType implements domain.NotificationRepository.
 func (n *NotificationRepository) FindByType(ctx context.Context, notification_type domain.NotifiationType) ([]domain.Notification, error) {
 	var notification []domain.Notification
-	if err := n.db.WithContext(ctx).Where("notification_type = ?", notification_type).Find(&notification).Error; err != nil {
+	if err := n.db.WithContext(ctx).Where("type = ?", notification_type).Find(&notification).Error; err != nil {
 		return nil, err
 	}
 	return notification, nil
 }
 
 // Update implements domain.NotificationRepository.
-func (n *NotificationRepository) Update(ctx context.Context, notification *domain.Notification) (error) {
+func (n *NotificationRepository) Update(ctx context.Context, notification *domain.Notification) error {
 	return n.db.WithContext(ctx).Where("id = ?", notification.ID).Updates(notification).Error
 }

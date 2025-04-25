@@ -254,10 +254,10 @@
         "senderName": {
           "type": "string"
         },
-        "senderEmail": {
+        "sender": {
           "type": "string"
         },
-        "recipientEmail": {
+        "recipient": {
           "type": "string"
         },
         "recipientName": {
@@ -283,10 +283,10 @@
         "senderName": {
           "type": "string"
         },
-        "senderEmail": {
+        "sender": {
           "type": "string"
         },
-        "recipientEmail": {
+        "recipient": {
           "type": "string"
         },
         "recipientName": {
@@ -360,10 +360,10 @@
         "senderName": {
           "type": "string"
         },
-        "senderEmail": {
+        "sender": {
           "type": "string"
         },
-        "recipientEmail": {
+        "recipient": {
           "type": "string"
         },
         "recipientName": {
