@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -9,8 +10,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/IBM/sarama"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/handler"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/internal/application"
+	"github.com/Kifiya-Financial-Technology/Notification-Service/internal/application/commands"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/internal/domain"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/internal/logging"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/internal/postgres"
@@ -23,6 +26,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"gorm.io/gorm"
+)
+
+const (
+	topic   = "notifications"
+	groupID = "notification-service"
 )
 
 func main() {
@@ -110,6 +118,53 @@ func main() {
 		}
 	}()
 
+	// Initialize Kafka reader
+	kafkaReader := []string{"kafka1:9091"}
+	consumer, err := sarama.NewConsumer(kafkaReader, nil)
+	if err != nil {
+		log.Fatalf("❌ failed to connect to Kafka broker: %v", err)
+	}
+
+	partitionList, err := consumer.Partitions(topic)
+	if err != nil {
+		log.Fatalf("❌ failed to get list of partitions: %v", err)
+	}
+
+	messages := make(chan *sarama.ConsumerMessage, 256)
+	initialOffset := sarama.OffsetOldest //offset to start reading message from
+	for _, partition := range partitionList {
+		pc, err := consumer.ConsumePartition(topic, partition, initialOffset)
+		if err != nil {
+			log.Printf("❌ Failed to consume partition %d: %v", partition, err)
+			continue // Don't continue blindly if failed
+		}
+
+		go func(pc sarama.PartitionConsumer) {
+			defer pc.AsyncClose()
+
+			for message := range pc.Messages() {
+				var notification domain.Notification
+
+				err := json.Unmarshal(message.Value, &notification)
+				if err != nil {
+					log.Printf("❌ Failed to unmarshal Kafka message: %v", err)
+					fmt.Printf("⚡ Raw message: %s\n", string(message.Value))
+					continue // Don't break — just skip this bad message!
+				}
+				// Successfully parsed message
+				app_logger.CreateNotification(context.Background(), commands.CreateNotificationCommand{
+					Subject:       notification.Subject,
+					Content:       notification.Content,
+					SenderName:    notification.SenderName,
+					Sender:        notification.Sender,
+					Recipient:     notification.Recipient,
+					RecipientName: notification.RecipientName,
+					Type:          notification.Type,
+				})
+				messages <- message
+			}
+		}(pc)
+	}
 	// Run the gRPC server
 	log.Fatal(grpcServer.Serve(listener))
 }

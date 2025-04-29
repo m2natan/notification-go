@@ -9,5 +9,5 @@ type NotificationRepository interface {
 	FindById(ctx context.Context, Id string) (*Notification, error)
 	FindAll(ctx context.Context) ([]Notification, error)
 	FindByStatus(ctx context.Context, status EmailStatus) ([]Notification, error)
-	FindByType(ctx context.Context, notification_type NotifiationType) ([]Notification, error)
+	FindByType(ctx context.Context, notification_type NotificationType) ([]Notification, error)
 }

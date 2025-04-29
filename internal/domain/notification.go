@@ -9,7 +9,7 @@ import (
 )
 
 type EmailStatus string
-type NotifiationType string
+type NotificationType string
 
 var ErrNotificationIsBlank = errors.New("notification field is blank")
 
@@ -18,32 +18,33 @@ const (
 	StatusSent    EmailStatus = "sent"
 	StatusFailed  EmailStatus = "failed"
 
-	NotificationTypeEmail   NotifiationType = "email"
-	NotificationTypeSms     NotifiationType = "sms"
-	NotificationTypeUnknown NotifiationType = "unknown"
+	NotificationTypeEmail   NotificationType = "email"
+	NotificationTypeSms     NotificationType = "sms"
+	NotificationTypeUnknown NotificationType = "unknown"
 )
 
 type Notification struct {
 	gorm.Model
-	Id            string `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	Subject       string
-	Content       string
-	SenderName    string
-	Sender        string
-	Recipient     string
-	RecipientName string
-	Status        EmailStatus
-	Type          NotifiationType
+	Id            string           `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Subject       string           `json:"subject"`
+	Content       string           `json:"content"`
+	SenderName    string           `json:"sender_name"`
+	Sender        string           `json:"sender"`
+	Recipient     string           `json:"recipient"`
+	RecipientName string           `json:"recipient_name"`
+	Status        EmailStatus      `json:"status"`
+	Type          NotificationType `json:"type"`
 }
 
-func CreateNotification(subject string, content string, senderName string, sender string, recipient string, recipientName string, status EmailStatus, notification_type NotifiationType) (notification *Notification, err error) {
+func CreateNotification(subject string, content string, senderName string, sender string, recipient string, recipientName string, status EmailStatus, notification_type NotificationType) (notification *Notification, err error) {
 	// Input validation
+	log.Println("The notification type is ", notification_type, subject, content, senderName, sender)
 	if subject == "" || content == "" || senderName == "" || sender == "" || recipient == "" || recipientName == "" || notification_type == "" {
 		return nil, ErrNotificationIsBlank
 	}
 
-	// Validate and map the string type to NotifiationType enum
-	var notifType NotifiationType
+	// Validate and map the string type to NotificationType enum
+	var notifType NotificationType
 	switch notification_type {
 	case "email":
 		notifType = NotificationTypeEmail

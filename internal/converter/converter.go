@@ -31,7 +31,7 @@ func convertStatusToPb(status domain.EmailStatus) notificationpb.EmailStatus {
 	}
 }
 
-func convertTypeToPb(t domain.NotifiationType) notificationpb.NotificationType {
+func convertTypeToPb(t domain.NotificationType) notificationpb.NotificationType {
 	switch t {
 	case domain.NotificationTypeSms:
 		return notificationpb.NotificationType_NOTIFICATION_TYPE_SMS
@@ -42,7 +42,7 @@ func convertTypeToPb(t domain.NotifiationType) notificationpb.NotificationType {
 	}
 }
 
-func ConvertPbTypeToDomain(t notificationpb.NotificationType) domain.NotifiationType {
+func ConvertPbTypeToDomain(t notificationpb.NotificationType) domain.NotificationType {
 	switch t {
 	case notificationpb.NotificationType_NOTIFICATION_TYPE_SMS:
 		return domain.NotificationTypeSms

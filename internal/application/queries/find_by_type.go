@@ -8,7 +8,7 @@ import (
 
 type (
 	FindByType struct {
-		Type domain.NotifiationType
+		Type domain.NotificationType
 	}
 
 	FindByTypeHandler struct {

@@ -16,7 +16,7 @@ type (
 		Recipient string
 		RecipientName  string
 		Status         domain.EmailStatus
-		Type           domain.NotifiationType
+		Type           domain.NotificationType
 	}
 
 	UpdateNotificationHandler struct {
