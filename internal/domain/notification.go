@@ -38,7 +38,6 @@ type Notification struct {
 
 func CreateNotification(subject string, content string, senderName string, sender string, recipient string, recipientName string, status EmailStatus, notification_type NotificationType) (notification *Notification, err error) {
 	// Input validation
-	log.Println("The notification type is ", notification_type, subject, content, senderName, sender)
 	if subject == "" || content == "" || senderName == "" || sender == "" || recipient == "" || recipientName == "" || notification_type == "" {
 		return nil, ErrNotificationIsBlank
 	}
