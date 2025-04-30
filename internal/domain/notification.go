@@ -20,6 +20,7 @@ const (
 
 	NotificationTypeEmail   NotificationType = "email"
 	NotificationTypeSms     NotificationType = "sms"
+	NotificationTypePush     NotificationType = "push"
 	NotificationTypeUnknown NotificationType = "unknown"
 )
 
@@ -49,6 +50,8 @@ func CreateNotification(subject string, content string, senderName string, sende
 		notifType = NotificationTypeEmail
 	case "sms":
 		notifType = NotificationTypeSms
+	case "push":
+		notifType = NotificationTypePush
 	default:
 		return nil, errors.New("invalid notification type") // Error handling for unsupported type
 	}

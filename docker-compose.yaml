@@ -11,6 +11,7 @@ services:
       - "${GRPC_PORT}:${GRPC_PORT}"
     depends_on:
       - postgres
+      - pgadmin
       - kafka1
     environment:
       - GRPC_PORT=${GRPC_PORT}

@@ -16,6 +16,7 @@ import (
 	"github.com/Kifiya-Financial-Technology/Notification-Service/internal/application/commands"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/internal/domain"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/internal/logging"
+	"github.com/Kifiya-Financial-Technology/Notification-Service/internal/notifier/push"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/internal/postgres"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/notificationpb"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/nswagger"
@@ -33,13 +34,56 @@ const (
 	groupID = "notification-service"
 )
 
+func init_database(dbHost, dbPort, dbUser, dbPass, dbName string) (*gorm.DB, error) {
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s",
+		dbHost, dbUser, dbPass, dbName, dbPort,
+	)
+	db, err := gorm.Open(pg.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("❌ failed to connect to DB: %v", err)
+		return nil, err
+	}
+	fmt.Println("✅ Database connected")
+
+	// Enable uuid-ossp extension
+	if err := db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`).Error; err != nil {
+		log.Fatalf("❌ failed to enable uuid-ossp extension: %v", err)
+		return nil, err
+	}
+
+	// Auto-migrate the Product model
+	if err := db.AutoMigrate(&domain.Notification{}); err != nil {
+		log.Fatalf("❌ failed to auto-migrate: %v", err)
+		return nil, err
+	}
+	fmt.Println("✅ Auto-migration complete")
+	return db, nil
+}
+
+func init_grpc_client(grpcPort string, grpcAddress string) (net.Listener, *grpc.Server, error) {
+
+	// Setup gRPC server
+	listener, err := net.Listen("tcp", grpcAddress)
+	if err != nil {
+		log.Fatalf("❌ failed to listen on port %v: %v", grpcPort, err)
+		return nil, nil, err
+	}
+
+	grpcServer := grpc.NewServer()
+	return listener, grpcServer, nil
+}
+
 func main() {
+
+	// Load environment variables
 	if err := godotenv.Load(".env"); err != nil {
 		log.Println("⚠️ No .env file found or failed to load it")
 	} else {
 		log.Println("✅ .env file loaded")
 	}
 
+	// Database connection setup
 	port := os.Getenv("REST_PORT")
 	grpcPort := os.Getenv("GRPC_PORT")
 	dbHost := os.Getenv("POSTGRES_HOST")
@@ -48,36 +92,16 @@ func main() {
 	dbPass := os.Getenv("POSTGRES_PASSWORD")
 	dbName := os.Getenv("POSTGRES_DATABASE")
 
-	grpcAddress := fmt.Sprintf("0.0.0.0:%s", grpcPort)
-
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s",
-		dbHost, dbUser, dbPass, dbName, dbPort,
-	)
-	db, err := gorm.Open(pg.Open(dsn), &gorm.Config{})
+	db, err := init_database(dbHost, dbPort, dbUser, dbPass, dbName)
 	if err != nil {
 		log.Fatalf("❌ failed to connect to DB: %v", err)
 	}
-	fmt.Println("✅ Database connected")
+	grpcAddress := fmt.Sprintf("0.0.0.0:%s", grpcPort)
 
-	// Enable uuid-ossp extension
-	if err := db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`).Error; err != nil {
-		log.Fatalf("❌ failed to enable uuid-ossp extension: %v", err)
-	}
-
-	// Auto-migrate the Product model
-	if err := db.AutoMigrate(&domain.Notification{}); err != nil {
-		log.Fatalf("❌ failed to auto-migrate: %v", err)
-	}
-	fmt.Println("✅ Auto-migration complete")
-
-	// Setup gRPC server
-	listener, err := net.Listen("tcp", grpcAddress)
+	listener, grpcServer, err := init_grpc_client(grpcPort, grpcAddress)
 	if err != nil {
 		log.Fatalf("❌ failed to listen on port %v: %v", grpcPort, err)
 	}
-
-	grpcServer := grpc.NewServer()
 
 	// Dependency injection
 	repo := postgres.NewNotificationRepository(db)
@@ -87,8 +111,6 @@ func main() {
 
 	// Register gRPC handlers
 	handler.NewServer(app_logger, grpcServer)
-
-	fmt.Println("🚀 gRPC server running on :" + grpcAddress)
 
 	// Setup gRPC-Gateway and Swagger
 	ctx := context.Background()
@@ -110,7 +132,9 @@ func main() {
 	httpMux := http.NewServeMux()
 	httpMux.Handle("/", mux)
 	httpMux.Handle("/swagger/", nswagger.SwaggerHandler())
+	httpMux.HandleFunc("/event", push.SSEHandler)
 
+	// Start the HTTP server for REST + Swagger
 	fmt.Println("🌐 HTTP server (REST + Swagger) running on :" + port)
 	go func() {
 		if err := http.ListenAndServe(":"+port, httpMux); err != nil {
@@ -130,8 +154,9 @@ func main() {
 		log.Fatalf("❌ failed to get list of partitions: %v", err)
 	}
 
+	// Start Kafka consumer to process messages
 	messages := make(chan *sarama.ConsumerMessage, 256)
-	initialOffset := sarama.OffsetOldest //offset to start reading message from
+	initialOffset := sarama.OffsetOldest // Offset to start reading message from
 	for _, partition := range partitionList {
 		pc, err := consumer.ConsumePartition(topic, partition, initialOffset)
 		if err != nil {
@@ -165,6 +190,7 @@ func main() {
 			}
 		}(pc)
 	}
+
 	// Run the gRPC server
 	log.Fatal(grpcServer.Serve(listener))
 }

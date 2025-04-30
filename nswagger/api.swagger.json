@@ -134,6 +134,7 @@
             "enum": [
               "NOTIFICATION_TYPE_EMAIL",
               "NOTIFICATION_TYPE_SMS",
+              "NOTIFICATION_TYPE_PUSH",
               "NOTIFICATION_TYPE_UNKNOWN"
             ]
           }
@@ -382,6 +383,7 @@
       "enum": [
         "NOTIFICATION_TYPE_EMAIL",
         "NOTIFICATION_TYPE_SMS",
+        "NOTIFICATION_TYPE_PUSH",
         "NOTIFICATION_TYPE_UNKNOWN"
       ],
       "default": "NOTIFICATION_TYPE_EMAIL"
