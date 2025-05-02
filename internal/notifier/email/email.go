@@ -45,6 +45,3 @@ func (m *MailjetNotifier) Send(subject string, content string, senderName string
 	return nil
 }
 
-func (m *MailjetNotifier) Sms(recipientNumber string, content string) error {
-	return fmt.Errorf("MailjetNotifier does not support SMS")
-}

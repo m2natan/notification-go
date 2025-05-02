@@ -38,7 +38,7 @@ func (t *TwilioNotifier) SendSms(recipientNumber, content string) error {
 
 	resp, err := t.client.Api.CreateMessage(params)
 	if err != nil {
-		return fmt.Errorf("Error sending SMS message: " + err.Error())
+		return fmt.Errorf("%s", "Error sending SMS message: " + err.Error())
 	} else {
 		response, _ := json.Marshal(*resp)
 		fmt.Println("Response: " + string(response))
