@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/Kifiya-Financial-Technology/Notification-Service/handler"
@@ -30,8 +31,13 @@ import (
 )
 
 const (
-	topic   = "notifications"
-	groupID = "notification-service"
+	topic         = "notifications"
+	consumerGroup = "notification-service-group" // Use consumer groups for scalability
+	numPartitions = 3                            // Match your Kafka topic partitions
+	batchSize     = 100                          // Process logs in batches
+	flushInterval = 1 * time.Second              // Max delay before flushing a batch
+	maxRetries    = 3                            // Retry failed messages
+	kafkaBrokers  = "kafka1:9091"
 )
 
 func init_database(dbHost, dbPort, dbUser, dbPass, dbName string) (*gorm.DB, error) {
@@ -142,23 +148,27 @@ func main() {
 		}
 	}()
 
+	config := sarama.NewConfig()
+	config.Version = sarama.V2_8_0_0
+	config.Consumer.Offsets.Initial = sarama.OffsetOldest
+	config.Consumer.Fetch.Min = 1 << 20     // 1MB
+	config.Consumer.Fetch.Default = 5 << 20 // 5MB
+	config.ChannelBufferSize = 1024         // Buffer size
+
 	// Initialize Kafka reader
-	kafkaReader := []string{"kafka1:9091"}
-	consumer, err := sarama.NewConsumer(kafkaReader, nil)
+	consumer, err := sarama.NewConsumer([]string{kafkaBrokers}, config)
 	if err != nil {
 		log.Fatalf("❌ failed to connect to Kafka broker: %v", err)
 	}
+	defer consumer.Close()
 
 	partitionList, err := consumer.Partitions(topic)
 	if err != nil {
 		log.Fatalf("❌ failed to get list of partitions: %v", err)
 	}
 
-	// Start Kafka consumer to process messages
-	messages := make(chan *sarama.ConsumerMessage, 256)
-	initialOffset := sarama.OffsetOldest // Offset to start reading message from
 	for _, partition := range partitionList {
-		pc, err := consumer.ConsumePartition(topic, partition, initialOffset)
+		pc, err := consumer.ConsumePartition(topic, partition, sarama.OffsetOldest)
 		if err != nil {
 			log.Printf("❌ Failed to consume partition %d: %v", partition, err)
 			continue // Don't continue blindly if failed
@@ -170,14 +180,13 @@ func main() {
 			for message := range pc.Messages() {
 				var notification domain.Notification
 
-				err := json.Unmarshal(message.Value, &notification)
-				if err != nil {
-					log.Printf("❌ Failed to unmarshal Kafka message: %v", err)
-					fmt.Printf("⚡ Raw message: %s\n", string(message.Value))
-					continue // Don't break — just skip this bad message!
+				if err := json.Unmarshal(message.Value, &notification); err != nil {
+					// If unmarshalling fails, print error and continue to the next message
+					fmt.Printf("⚡ Invalid Kafka message: %s\n", string(message.Value))
+					continue
 				}
 				// Successfully parsed message
-				app_logger.CreateNotification(context.Background(), commands.CreateNotificationCommand{
+				_, err := app_logger.CreateNotification(context.Background(), commands.CreateNotificationCommand{
 					Subject:       notification.Subject,
 					Content:       notification.Content,
 					SenderName:    notification.SenderName,
@@ -186,7 +195,12 @@ func main() {
 					RecipientName: notification.RecipientName,
 					Type:          notification.Type,
 				})
-				messages <- message
+				if err != nil {
+					log.Printf("⚠️ Failed to process log: %v\n", err)
+				} else {
+					// Successfully processed log
+					log.Printf("✅ Log processed: %s\n", notification) // print the actual message, not the raw value
+				}
 			}
 		}(pc)
 	}
